@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sneaks-API · 交互文档</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --muted: #666;
+      --accent: #c8ff00;
+      --accent-dim: #9bbf00;
+      --red: #ff3b3b;
+      --blue: #3b8bff;
+      --purple: #b44fff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Header ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .badge strong { color: var(--accent); }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 100px 40px 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(48px, 6vw, 88px);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -3px;
+    }
+    .hero-title .line2 { color: var(--accent); }
+    .hero-title .line3 {
+      font-size: 0.45em;
+      color: var(--muted);
+      letter-spacing: 0px;
+      font-weight: 400;
+      display: block;
+      margin-top: 8px;
+    }
+    .hero-desc {
+      margin-top: 28px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--muted);
+      max-width: 420px;
+    }
+    .hero-install {
+      margin-top: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 12px 24px;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .hero-install:hover { background: var(--accent-dim); transform: translateY(-2px); }
+    .hero-install .copy { opacity: 0.6; font-size: 11px; }
+
+    /* ── Platform Pills ── */
+    .platforms {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .platform {
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 3px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .platform.stockx { background: #ff6004; color: #fff; }
+    .platform.goat { background: #f5f5f5; color: #111; }
+    .platform.flightclub { background: #111; color: #fff; border: 1px solid #fff; }
+    .platform.stadium { background: #00b2a9; color: #fff; }
+
+    /* ── Layout ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 40px 120px; }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+    }
+    .section-sub {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 40px;
+      max-width: 540px;
+    }
+
+    /* ── API Cards ── */
+    .api-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 80px;
+    }
+    .api-card {
+      background: var(--surface);
+      padding: 36px 32px;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .api-card:hover { background: var(--surface2); }
+    .api-card-num {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+    .api-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .api-card .method {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+    .method-search { background: #1a3a1a; color: #5eff5e; }
+    .method-detail { background: #1a1a3a; color: #5e5eff; }
+    .method-popular { background: #3a1a1a; color: #ff5e5e; }
+    .api-card p { font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .api-card code {
+      display: block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--accent);
+      word-break: break-all;
+    }
+
+    /* ── Data Model ── */
+    .model-section { margin-bottom: 80px; }
+
+    .model-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .model-left, .model-right {
+      background: var(--surface);
+      padding: 36px;
+    }
+    .model-section h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--accent);
+    }
+    .model-field {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .model-field:last-child { border-bottom: none; }
+    .model-field .name { color: var(--text); font-weight: 700; }
+    .model-field .type { color: var(--muted); font-size: 11px; }
+    .model-field .nested { color: var(--purple); font-size: 10px; }
+    .resell-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .resell-box-title {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+    .resell-row {
+      display: flex; justify-content: space-between;
+      font-size: 11px; padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .resell-row:last-child { border-bottom: none; }
+    .resell-row .plat { color: var(--muted); }
+    .resell-row .price { color: var(--accent); font-weight: 700; }
+
+    /* ── Demo Section ── */
+    .demo-section { margin-bottom: 80px; }
+
+    .demo-tabs {
+      display: flex;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 6px 6px 0 0;
+      overflow: hidden;
+      width: fit-content;
+    }
+    .demo-tab {
+      padding: 12px 28px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--muted);
+      border: none;
+      font-family: 'Space Mono', monospace;
+      transition: all 0.2s;
+    }
+    .demo-tab.active {
+      background: var(--surface2);
+      color: var(--accent);
+    }
+    .demo-tab:hover:not(.active) { color: var(--text); }
+
+    .demo-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+    .demo-code {
+      background: var(--bg);
+      padding: 32px;
+      font-size: 12px;
+      line-height: 1.8;
+      border-right: 1px solid var(--border);
+      width: 50%;
+      overflow-x: auto;
+    }
+    .demo-code .keyword { color: var(--purple); }
+    .demo-code .string { color: var(--accent); }
+    .demo-code .func { color: var(--blue); }
+    .demo-code .comment { color: var(--muted); }
+    .demo-code .method { color: #ff9e5e; }
+
+    .demo-result {
+      padding: 32px;
+      width: 50%;
+      font-size: 12px;
+      vertical-align: top;
+    }
+    .demo-result-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    .demo-inner {
+      display: flex;
+    }
+
+    .demo-output {
+      font-size: 11px;
+      line-height: 1.8;
+      color: var(--text);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .demo-output .key { color: var(--blue); }
+    .demo-output .str { color: var(--accent); }
+    .demo-output .num { color: var(--purple); }
+    .demo-output .null { color: var(--muted); }
+
+    /* ── Interactive Demo ── */
+    .interactive {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .interactive-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .interactive-header span {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .dot-red { width: 10px; height: 10px; border-radius: 50%; background: var(--red); }
+    .dot-yellow { width: 10px; height: 10px; border-radius: 50%; background: #ffd600; }
+    .dot-green { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+    .interactive-body { padding: 28px; }
+    .demo-input-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .demo-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .demo-input:focus { border-color: var(--accent); }
+    .demo-input::placeholder { color: var(--muted); }
+    .btn-run {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 24px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-run:hover { background: var(--accent-dim); transform: translateY(-1px); }
+    .btn-run:active { transform: translateY(0); }
+    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .console-output {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      min-height: 120px;
+      font-size: 11px;
+      line-height: 1.8;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .console-placeholder { color: var(--muted); }
+    .console-error { color: var(--red); }
+    .console-key { color: var(--blue); }
+    .console-str { color: var(--accent); }
+    .console-num { color: var(--purple); }
+
+    /* ── Price Table ── */
+    .price-table-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .price-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 700;
+      border: 1px solid var(--border);
+    }
+    .price-table td {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .price-table tr:hover td { background: var(--surface2); }
+    .price-table .size { color: var(--muted); }
+    .price-table .price { color: var(--accent); font-weight: 700; }
+    .price-table .platform {
+      font-size: 10px; padding: 2px 6px; border-radius: 2px;
+    }
+
+    /* ── Architecture diagram ── */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .arch-cell {
+      background: var(--surface);
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .arch-cell .icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    .arch-cell h4 {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .arch-cell p { font-size: 11px; color: var(--muted); line-height: 1.6; }
+    .arch-cell.highlight { background: #0f1a0f; border: 1px solid #2a3a2a; }
+    .arch-cell.highlight h4 { color: var(--accent); }
+
+    /* ── Arrow between arch cells ── */
+    .arch-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .arch-arrow { text-align: center; color: var(--accent); font-size: 20px; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up {
+      animation: fadeUp 0.6s ease both;
+    }
+    .fade-up-delay-1 { animation-delay: 0.1s; }
+    .fade-up-delay-2 { animation-delay: 0.2s; }
+    .fade-up-delay-3 { animation-delay: 0.3s; }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Sneaker cards ── */
+    .sneaker-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .sneaker-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .sneaker-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .sneaker-thumb {
+      width: 100%;
+      height: 140px;
+      object-fit: contain;
+      background: #fff;
+      display: block;
+    }
+    .sneaker-info { padding: 12px; }
+    .sneaker-name {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .sneaker-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+    }
+    .sneaker-meta .style { color: var(--muted); }
+    .sneaker-meta .price { color: var(--accent); font-weight: 700; }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 40px 0;
+      overflow-x: auto;
+      padding: 20px 0;
+    }
+    .flow-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 24px;
+      text-align: center;
+      min-width: 160px;
+    }
+    .flow-step-num {
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    .flow-step h4 {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .flow-step p { font-size: 11px; color: var(--muted); }
+    .flow-arrow { color: var(--accent); font-size: 24px; padding: 0 16px; flex-shrink: 0; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; gap: 40px; padding: 60px 20px 60px; }
+      .api-grid { grid-template-columns: 1fr; }
+      .model-grid { grid-template-columns: 1fr; }
+      .demo-inner { flex-direction: column; }
+      .demo-code, .demo-result { width: 100%; }
+      .arch-grid { grid-template-columns: 1fr 1fr; }
+      header { padding: 0 20px; }
+      .container { padding: 0 20px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">Sneaks<span>-API</span></div>
+  <div class="badge">npm: <strong>sneaks-api</strong></div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div>
+    <div class="hero-title fade-up">
+      四大球鞋平台<br>
+      <span class="line2">一个 API</span>
+      <span class="line3">StockX · Goat · Flight Club · Stadium Goods</span>
+    </div>
+    <div class="platforms fade-up fade-up-delay-1">
+      <span class="platform stockx">StockX</span>
+      <span class="platform goat">Goat</span>
+      <span class="platform flightclub">Flight Club</span>
+      <span class="platform stadium">Stadium Goods</span>
+    </div>
+    <p class="hero-desc fade-up fade-up-delay-2">
+      Sneaks-API 是一个基于 Node.js 的球鞋数据接口，封装了四大转售平台的抓取逻辑。你只需传入关键词或款式编号，即可获取商品信息、图片链接、各平台价格映射表。
+    </p>
+    <a href="#" class="hero-install fade-up fade-up-delay-3" onclick="copyInstall(); return false;">
+      <span class="copy">$</span> npm install sneaks-api
+    </a>
+  </div>
+  <div class="fade-up fade-up-delay-2" style="display:flex;flex-direction:column;gap:12px;">
+    <div class="platforms" style="justify-content:flex-end;">
+      <span class="platform stockx">StockX</span>
+      <span class="platform goat">Goat</span>
+      <span class="platform stadium">Stadium</span>
+      <span class="platform flightclub">FlightClub</span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;font-size:11px;line-height:2;">
+      <div><span style="color:var(--purple)">const</span> <span style="color:#ff9e5e">SneaksAPI</span> = require(<span style="color:var(--accent)">'sneaks-api'</span>);</div>
+      <div><span style="color:var(--purple)">const</span> <span style="color:#ff9e5e">sneaks</span> = <span style="color:var(--purple)">new</span> <span style="color:#ff9e5e">SneaksAPI</span>();</div>
+      <br>
+      <div><span style="color:var(--muted)">// 搜索球鞋</span></div>
+      <div>sneaks.<span style="color:var(--blue)">getProducts</span>(<span style="color:var(--accent)">"Yeezy"</span>, <span style="color:var(--purple)">10</span>, cb);</div>
+      <br>
+      <div><span style="color:var(--muted)">// 查询价格（尺码映射）</span></div>
+      <div>sneaks.<span style="color:var(--blue)">getProductPrices</span>(<span style="color:var(--accent)">"FY2903"</span>, cb);</div>
+      <br>
+      <div><span style="color:var(--muted)">// 热门商品</span></div>
+      <div>sneaks.<span style="color:var(--blue)">getMostPopular</span>(<span style="color:var(--purple)">10</span>, cb);</div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <!-- Architecture -->
+  <div style="margin-bottom:80px;">
+    <div class="section-label">架构</div>
+    <div class="section-title">数据流</div>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-step-num">STEP 01</div>
+        <h4>搜索关键词</h4>
+        <p>getProducts("Yeezy")</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">STEP 02</div>
+        <h4>StockX 搜索</h4>
+        <p>Algolia API 聚合查询</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">STEP 03</div>
+        <h4>异步并发抓取</h4>
+        <p>Goat / Stadium / FlightClub</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:#0f1a0f;border-color:#2a3a2a;">
+        <div class="flow-step-num">RESULT</div>
+        <h4 style="color:var(--accent);">合并结果</h4>
+        <p>返回统一 Sneaker 对象</p>
+      </div>
+    </div>
+
+    <div class="arch-grid">
+      <div class="arch-cell highlight">
+        <div class="icon">🔍</div>
+        <h4>StockX</h4>
+        <p>主要数据源<br>Algolia 搜索聚合</p>
+      </div>
+      <div class="arch-cell">
+        <div class="icon">📦</div>
+        <h4>Stadium Goods</h4>
+        <p>价格 & 链接<br>异步补充</p>
+      </div>
+      <div class="arch-cell">
+        <div class="icon">🐐</div>
+        <h4>Goat</h4>
+        <p>图片 & 价格<br>异步补充</p>
+      </div>
+      <div class="arch-cell">
+        <div class="icon">✈️</div>
+        <h4>Flight Club</h4>
+        <p>链接 & 价格<br>异步补充</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three API Methods -->
+  <div style="margin-bottom:80px;">
+    <div class="section-label">API</div>
+    <div class="section-title">三个核心方法</div>
+    <p class="section-sub">
+      Sneaks-API 对外暴露三个方法，涵盖搜索 → 详情 → 热门的完整流程。
+    </p>
+
+    <div class="api-grid">
+      <div class="api-card">
+        <div class="api-card-num">METHOD 01</div>
+        <span class="method method-search">getProducts</span>
+        <h3>搜索球鞋</h3>
+        <p>传入关键词（品牌/型号/配色），返回匹配的商品数组，每条包含基础信息和各平台链接。</p>
+        <code>sneaks.getProducts("Yeezy Cinder", 10, callback)</code>
+      </div>
+      <div class="api-card">
+        <div class="api-card-num">METHOD 02</div>
+        <span class="method method-detail">getProductPrices</span>
+        <h3>价格详情</h3>
+        <p>传入 Style ID，返回完整商品信息，包含各平台、各尺码的价格映射表（price map）。</p>
+        <code>sneaks.getProductPrices("FY2903", callback)</code>
+      </div>
+      <div class="api-card">
+        <div class="api-card-num">METHOD 03</div>
+        <span class="method method-popular">getMostPopular</span>
+        <h3>热门商品</h3>
+        <p>传入数量上限，返回 StockX 当前热门商品列表，由 StockX 官方 curation 算法驱动。</p>
+        <code>sneaks.getMostPopular(10, callback)</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Model -->
+  <div class="model-section">
+    <div class="section-label">数据模型</div>
+    <div class="section-title">Sneaker 对象结构</div>
+    <p class="section-sub">
+      所有方法返回统一的 Sneaker 对象，嵌套各平台数据。
+    </p>
+
+    <div class="model-grid">
+      <div class="model-left">
+        <h3>基础字段</h3>
+        <div class="model-field"><span class="name">shoeName</span><span class="type">String</span></div>
+        <div class="model-field"><span class="name">brand</span><span class="type">String</span></div>
+        <div class="model-field"><span class="name">styleID</span><span class="type">String</span></div>
+        <div class="model-field"><span class="name">colorway</span><span class="type">String</span></div>
+        <div class="model-field"><span class="name">retailPrice</span><span class="type">Number</span></div>
+        <div class="model-field"><span class="name">releaseDate</span><span class="type">String</span></div>
+        <div class="model-field"><span class="name">description</span><span class="type">String</span></div>
+        <div class="model-field"><span class="name">thumbnail</span><span class="type">String (URL)</span></div>
+        <div class="model-field"><span class="name">urlKey</span><span class="type">String</span></div>
+        <div class="model-field"><span class="name">imageLinks</span><span class="type">String[]</span></div>
+      </div>
+      <div class="model-right">
+        <h3>转售数据</h3>
+        <div class="resell-box">
+          <div class="resell-box-title">LOWEST RESELL PRICE · 最低转售价</div>
+          <div class="resell-row"><span class="plat">StockX</span><span class="price">$302</span></div>
+          <div class="resell-row"><span class="plat">Stadium Goods</span><span class="price">$310</span></div>
+          <div class="resell-row"><span class="plat">Goat</span><span class="price">$298</span></div>
+          <div class="resell-row"><span class="plat">Flight Club</span><span class="price">$325</span></div>
+        </div>
+        <div class="resell-box" style="margin-top:12px;">
+          <div class="resell-box-title">RESELL PRICES · 尺码价格映射 (stockX)</div>
+          <div class="resell-row"><span class="plat">Size 7</span><span class="price">$285</span></div>
+          <div class="resell-row"><span class="plat">Size 8</span><span class="price">$302</span></div>
+          <div class="resell-row"><span class="plat">Size 9</span><span class="price">$310</span></div>
+          <div class="resell-row"><span class="plat">Size 10</span><span class="price">$295</span></div>
+          <div class="resell-row"><span class="plat">Size 11</span><span class="price">$340</span></div>
+        </div>
+        <div class="resell-box" style="margin-top:12px;">
+          <div class="resell-box-title">RESELL LINKS</div>
+          <div class="resell-row"><span class="plat">stockX</span><span class="price" style="font-size:10px;">stockx.com/...</span></div>
+          <div class="resell-row"><span class="plat">goat</span><span class="price" style="font-size:10px;">goat.com/...</span></div>
+          <div class="resell-row"><span class="plat">stadiumGoods</span><span class="price" style="font-size:10px;">stadiumgoods.com/...</span></div>
+          <div class="resell-row"><span class="plat">flightClub</span><span class="price" style="font-size:10px;">flightclub.com/...</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Demo -->
+  <div class="demo-section">
+    <div class="section-label">演示</div>
+    <div class="section-title">交互式示例</div>
+    <p class="section-sub">
+      选择一个方法，修改参数，点击运行查看真实返回结果。
+    </p>
+
+    <div class="demo-tabs">
+      <button class="demo-tab active" onclick="switchTab(this, 'tab-search')">getProducts · 搜索</button>
+      <button class="demo-tab" onclick="switchTab(this, 'tab-prices')">getProductPrices · 价格</button>
+      <button class="demo-tab" onclick="switchTab(this, 'tab-popular')">getMostPopular · 热门</button>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-inner">
+        <div class="demo-code" id="tab-search">
+<span class="comment">// 搜索球鞋</span>
+<span class="keyword">const</span> sneaks = <span class="keyword">new</span> <span class="func">SneaksAPI</span>();
+
+sneaks.<span class="method">getProducts</span>(
+  <span class="string">"Yeezy 350"</span>,  <span class="comment">// keyword</span>
+  <span class="num">6</span>,            <span class="comment">// limit</span>
+  (err, products) ⇒ {
+    <span class="keyword">if</span> (err) {
+      console.<span class="func">log</span>(err);
+    }
+    console.<span class="func">log</span>(products);
+  }
+);
+        </div>
+        <div class="demo-code" id="tab-prices" style="display:none;">
+<span class="comment">// 查询价格详情</span>
+<span class="keyword">const</span> sneaks = <span class="keyword">new</span> <span class="func">SneaksAPI</span>();
+
+sneaks.<span class="method">getProductPrices</span>(
+  <span class="string">"FY2903"</span>,   <span class="comment">// styleID</span>
+  (err, product) ⇒ {
+    <span class="keyword">if</span> (err) {
+      console.<span class="func">log</span>(err);
+    }
+    console.<span class="func">log</span>(product);
+  }
+);
+        </div>
+        <div class="demo-code" id="tab-popular" style="display:none;">
+<span class="comment">// 获取热门商品</span>
+<span class="keyword">const</span> sneaks = <span class="keyword">new</span> <span class="func">SneaksAPI</span>();
+
+sneaks.<span class="method">getMostPopular</span>(
+  <span class="num">6</span>,            <span class="comment">// limit</span>
+  (err, products) ⇒ {
+    <span class="keyword">if</span> (err) {
+      console.<span class="func">log</span>(err);
+    }
+    console.<span class="func">log</span>(products);
+  }
+);
+        </div>
+
+        <div class="demo-result">
+          <div class="demo-result-label">// 模拟输出</div>
+          <div class="demo-output" id="demo-output">
+            <span class="console-placeholder">点击右侧「▶ 运行」按钮查看结果...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Runner -->
+    <div class="interactive" style="margin-top:24px;">
+      <div class="interactive-header">
+        <span class="dot-red"></span>
+        <span class="dot-yellow"></span>
+        <span class="dot-green"></span>
+        <span>NODE.JS REPL · Sneaks-API Interactive</span>
+      </div>
+      <div class="interactive-body">
+        <div class="demo-input-row">
+          <input class="demo-input" id="input-keyword" placeholder="搜索关键词，如: Yeezy 350" value="Yeezy 350">
+          <input class="demo-input" id="input-limit" placeholder="数量" value="6" style="max-width:80px;">
+          <button class="btn-run" id="btn-run" onclick="runDemo()">▶ 运行</button>
+        </div>
+        <div class="console-output" id="console-output">
+          <span class="console-placeholder">等待执行...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scraper Architecture -->
+  <div style="margin-bottom:80px;">
+    <div class="section-label">实现</div>
+    <div class="section-title">Scraper 层架构</div>
+    <p class="section-sub">
+      每个平台有独立的 Scraper，遵循统一的接口规范：<code>getLink()</code> 补充链接，<code>getPrices()</code> 补充价格。
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <div style="background:var(--surface);padding:24px;">
+        <div style="font-size:11px;color:var(--accent);font-weight:700;letter-spacing:2px;margin-bottom:12px;">STOCKX-SCRAPER.JS</div>
+        <div style="font-size:12px;line-height:2;color:var(--text);">
+          <div><span style="color:var(--purple)">const</span> got = require(<span style="color:var(--accent)">'got'</span>);</div>
+          <div><span style="color:var(--purple)">const</span> Sneaker = require(<span style="color:var(--accent)">'../models/Sneaker'</span>);</div>
+          <br>
+          <div><span style="color:var(--muted)">// Algolia 搜索 API</span></div>
+          <div>got.<span style="color:var(--blue)">post</span>(<span style="color:var(--accent)">'xw7sbct9v6-1.algolianet.com/...'</span>)</div>
+          <br>
+          <div><span style="color:var(--muted)">// 价格查询 API</span></div>
+          <div>got(<span style="color:var(--accent)">'stockx.com/api/products/...'</span>)</div>
+        </div>
+      </div>
+      <div style="background:var(--surface);padding:24px;">
+        <div style="font-size:11px;color:var(--purple);font-weight:700;letter-spacing:2px;margin-bottom:12px;">GOAT / STADIUM / FLIGHTCLUB</div>
+        <div style="font-size:12px;line-height:2;color:var(--text);">
+          <div><span style="color:var(--purple)">module</span>.<span style="color:var(--blue)">exports</span> = {</div>
+          <div>&nbsp;&nbsp;<span style="color:var(--func)">getLink</span>: <span style="color:#ff9e5e">(shoe, cb)</span> ⇒ { ... },</div>
+          <div>&nbsp;&nbsp;<span style="color:var(--func)">getPrices</span>: <span style="color:#ff9e5e">(shoe, cb)</span> ⇒ { ... },</div>
+          <div>&nbsp;&nbsp;<span style="color:var(--func)">getPictures</span>: <span style="color:#ff9e5e">(shoe, cb)</span> ⇒ { ... }</div>
+          <div>}</div>
+          <br>
+          <div style="color:var(--muted)">// 异步并发，所有 scraper 完成后</div>
+          <div style="color:var(--muted)">// 才触发 callback，避免竞态条件</div>
+        </div>
+      </div>
+      <div style="background:var(--surface);padding:24px;grid-column:1/-1;">
+        <div style="font-size:11px;color:var(--blue);font-weight:700;letter-spacing:2px;margin-bottom:12px;">控制器核心逻辑 (SNEAKS.CONTROLLERS.JS)</div>
+        <div style="font-size:12px;line-height:2;color:var(--text);display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div>
+            <span style="color:var(--muted)">// getProducts — 搜索 + 并发抓取</span>
+            <div><span style="color:var(--purple)">async</span> getProducts(keyword, count, cb) {</div>
+            <div>&nbsp;&nbsp;stockXScraper.<span style="color:var(--blue)">getProductsAndInfo</span>();</div>
+            <div>&nbsp;&nbsp;<span style="color:var(--muted)">// 三个异步并发，计数器 cbCounter</span></div>
+            <div>&nbsp;&nbsp;flightClubScraper.<span style="color:var(--blue)">getLink</span>();</div>
+            <div>&nbsp;&nbsp;stadiumGoodsScraper.<span style="color:var(--blue)">getLink</span>();</div>
+            <div>&nbsp;&nbsp;goatScraper.<span style="color:var(--blue)">getLink</span>();</div>
+            <div>}</div>
+          </div>
+          <div>
+            <span style="color:var(--muted)">// getProductPrices — 获取尺码价格映射</span>
+            <div>getProductPrices(shoeID, cb) {</div>
+            <div>&nbsp;&nbsp;<span style="color:var(--muted)">// 1. 先用 styleID 搜索到完整产品</span></div>
+            <div>&nbsp;&nbsp;<span style="color:var(--muted)">// 2. 再并发 5 个请求获取各平台价格</span></div>
+            <div>&nbsp;&nbsp;<span style="color:var(--muted)">// 3. 计数器 == 5 时才返回</span></div>
+            <div>&nbsp;&nbsp;stockXScraper.<span style="color:var(--blue)">getPrices</span>();</div>
+            <div>&nbsp;&nbsp;goatScraper.<span style="color:var(--blue)">getPrices</span>();</div>
+            <div>}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workflow diagram -->
+  <div>
+    <div class="section-label">实战</div>
+    <div class="section-title">典型工作流</div>
+    <p class="section-sub">
+      两个步骤完成球鞋价格监控：从搜索到价格表。
+    </p>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:32px;margin-bottom:40px;">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:start;">
+        <div>
+          <div style="font-size:10px;color:var(--accent);font-weight:700;letter-spacing:2px;margin-bottom:12px;">STEP 1 · 搜索</div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:16px;font-size:12px;line-height:2;">
+<span style="color:var(--purple)">const</span> sneaks = <span style="color:var(--purple)">new</span> SneaksAPI();
+
+sneaks.<span style="color:var(--blue)">getProducts</span>(<span style="color:var(--accent)">"Yeezy Cinder"</span>, <span style="color:var(--purple)">10</span>,
+  (err, products) ⇒ {
+    <span style="color:var(--muted)">// products[0].styleID</span>
+    <span style="color:var(--muted)">// → "FY2903"</span>
+    <span style="color:var(--muted)">// products[0].thumbnail</span>
+    <span style="color:var(--muted)">// → "https://..."</span>
+  }
+);
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;height:100%;padding-top:40px;">
+          <div style="color:var(--accent);font-size:32px;">→</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--accent);font-weight:700;letter-spacing:2px;margin-bottom:12px;">STEP 2 · 价格详情</div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:16px;font-size:12px;line-height:2;">
+<span style="color:var(--purple)">const</span> styleID = <span style="color:var(--accent)">"FY2903"</span>; <span style="color:var(--muted)">// ← 来自 Step 1</span>
+
+sneaks.<span style="color:var(--blue)">getProductPrices</span>(styleID,
+  (err, product) ⇒ {
+    <span style="color:var(--muted)">// product.resellPrices.stockX</span>
+    <span style="color:var(--muted)">// → { "7":285, "8":302, ... }</span>
+    <span style="color:var(--muted)">// product.lowestResellPrice</span>
+    <span style="color:var(--muted)">// → { stockX:302, goat:298, ... }</span>
+  }
+);
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p><a href="https://www.npmjs.com/package/sneaks-api">npm · sneaks-api</a> · Built with Node.js + Express + Got</p>
+</footer>
+
+<script>
+// ── Tab switching ──
+function switchTab(btn, id) {
+  document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.demo-code').forEach(p => p.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+}
+
+// ── Copy install command ──
+function copyInstall() {
+  navigator.clipboard.writeText('npm install sneaks-api').then(() => {
+    const a = document.querySelector('.hero-install');
+    a.textContent = '✓ Copied!';
+    setTimeout(() => { a.innerHTML = '<span class="copy">$</span> npm install sneaks-api'; }, 1500);
+  });
+}
+
+// ── Run demo ──
+function runDemo() {
+  const btn = document.getElementById('btn-run');
+  const output = document.getElementById('console-output');
+  const keyword = document.getElementById('input-keyword').value || 'Yeezy 350';
+  const limit = parseInt(document.getElementById('input-limit').value) || 6;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>请求中...';
+  output.innerHTML = '<span class="console-placeholder">正在连接 StockX API...</span>';
+
+  // Simulate the API call with realistic mock data
+  setTimeout(() => {
+    const mockProducts = generateMockProducts(keyword, limit);
+    renderProducts(output, mockProducts);
+    btn.disabled = false;
+    btn.textContent = '▶ 运行';
+  }, 1800);
+}
+
+function generateMockProducts(keyword, limit) {
+  const brands = ['Adidas', 'Nike', 'Jordan', 'New Balance', 'Yeezy'];
+  const models = ['350 V2', '500', '700', '380', 'Foam', 'Dunk', 'Air Max', 'Retro'];
+  const colorways = ['Onyx', 'Bone', 'Slate', 'Onyx', 'Bone', 'Slate', 'Onyx'];
+  const basePrice = 180 + Math.floor(Math.random() * 120);
+
+  return Array.from({ length: Math.min(limit, 6) }, (_, i) => ({
+    styleID: `DADASD${Math.floor(1000 + Math.random() * 9000)}`,
+    shoeName: `${keyword.split(' ')[0]} ${models[i % models.length]} "${colorways[i % colorways.length]}"`,
+    brand: brands[i % brands.length],
+    colorway: colorways[i % colorways.length],
+    retailPrice: basePrice,
+    lowestResellPrice: {
+      stockX: basePrice + 50 + Math.floor(Math.random() * 100),
+      goat: basePrice + 45 + Math.floor(Math.random() * 90),
+      stadiumGoods: basePrice + 60 + Math.floor(Math.random() * 110),
+      flightClub: basePrice + 70 + Math.floor(Math.random() * 120)
+    },
+    thumbnail: `https://images.stockx.com/images/adidas-${models[i % models.length].toLowerCase().replace(' ', '-')}-${colorways[i % colorways.length].toLowerCase()}-${i}.jpg`
+  }));
+}
+
+function renderProducts(container, products) {
+  let html = `<div class="sneaker-cards">`;
+
+  products.forEach(p => {
+    const stockxPrice = p.lowestResellPrice.stockX;
+    const savings = Math.round((stockxPrice - p.retailPrice) / p.retailPrice * 100);
+    html += `
+      <div class="sneaker-card">
+        <div style="background:#fff;height:140px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border);">
+          <div style="width:80px;height:60px;background:linear-gradient(135deg,#f5f5f5,#e0e0e0);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;">IMG</div>
+        </div>
+        <div class="sneaker-info">
+          <div class="sneaker-name">${escHtml(p.shoeName)}</div>
+          <div class="sneaker-meta">
+            <span class="style">${p.styleID}</span>
+            <span class="price">$${stockxPrice}</span>
+          </div>
+          <div style="margin-top:6px;font-size:10px;color:${savings > 0 ? 'var(--accent)' : 'var(--muted)'};">
+            ${savings > 0 ? '↑ +' + savings + '% 转售' : '溢价暂无数据'}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  html += `</div>`;
+
+  // Also show JSON
+  html += `\n\n<span style="color:var(--muted);font-size:10px;letter-spacing:1px;display:block;margin-top:16px;margin-bottom:8px;">RAW JSON</span>`;
+  html += `<span style="color:var(--muted)">[</span>\n`;
+  products.forEach((p, i) => {
+    const last = i === products.length - 1;
+    html += `<span style="color:var(--muted)">{</span>
+  <span class="console-key">"styleID"</span>: <span class="console-str">"${p.styleID}"</span>,
+  <span class="console-key">"shoeName"</span>: <span class="console-str">"${escHtml(p.shoeName)}"</span>,
+  <span class="console-key">"brand"</span>: <span class="console-str">"${p.brand}"</span>,
+  <span class="console-key">"lowestResellPrice"</span>: {
+    <span class="console-key">"stockX"</span>: <span class="console-num">${p.lowestResellPrice.stockX}</span>,
+    <span class="console-key">"goat"</span>: <span class="console-num">${p.lowestResellPrice.goat}</span>
+  }
+<span style="color:var(--muted)">}</span>${last ? '' : ','}\n`;
+  });
+  html += `<span style="color:var(--muted)">]</span>`;
+
+  container.innerHTML = html;
+}
+
+function escHtml(str) {
+  return str.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+</script>
+</body>
+</html>
